@@ -17,6 +17,12 @@ In search.py, you will implement generic search algorithms which are called by
 Pacman agents (in searchAgents.py).
 """
 
+"""
+    Name: Kai Ying Chan
+    Date: 10/12/2021
+    Description: This is a file that uses DFS, BFS, UCS, A* search to find paths for pacman to move
+"""
+
 import util
 
 class SearchProblem:
@@ -70,7 +76,7 @@ def tinyMazeSearch(problem):
     from game import Directions
     s = Directions.SOUTH
     w = Directions.WEST
-    return  [s, s, w, s, w, w, s, w]
+    return [s, s, w, s, w, w, s, w]
 
 def depthFirstSearch(problem):
     """
@@ -87,31 +93,117 @@ def depthFirstSearch(problem):
     print("Start's successors:", problem.getSuccessors(problem.getStartState()))
     """
     "*** YOUR CODE HERE ***"
-    print("Start:", problem.getStartState())
-    print("Is the start a goal?", problem.isGoalState(problem.getStartState()))
-    print("Start's successors:", problem.getSuccessors(problem.getStartState()))
 
-    
+    # node is initial state, actions, cost
+    startingNode = (problem.getStartState(), [], 0)
 
+    # if start is goal return nothing
+    if problem.isGoalState(problem.getStartState()):
+        return []
 
+    # create LIFO Queue with node as only element
+    frontier = util.Stack()
+    frontier.push(startingNode)
 
+    # create list for reached Nodes
+    reachedNodes = []
 
+    # loop until frontier is empty
+    while not frontier.isEmpty():
+        # choose the shallowest node in frontier
+        currentState, actions, currentCost = frontier.pop()
 
+        # add current state to reachedNodes if current state hasn't been expanded
+        if currentState not in reachedNodes:
+            reachedNodes.append(currentState)
 
-    util.raiseNotDefined()
+            # return actions if finds goal
+            if problem.isGoalState(currentState):
+                return actions
+            else:
+                # expand successor and add to frontier
+                for successorState, successorAction, successorCost in problem.getSuccessors(currentState):
+                    child = (successorState, actions + [successorAction], currentCost + successorCost)
+                    frontier.push(child)
+
+    return actions
 
 def breadthFirstSearch(problem):
     """Search the shallowest nodes in the search tree first."""
     "*** YOUR CODE HERE ***"
-    print("Start:", problem.getStartState())
-    print("Is the start a goal?", problem.isGoalState(problem.getStartState()))
-    print("Start's successors:", problem.getSuccessors(problem.getStartState()))
-    util.raiseNotDefined()
+
+    # node is initial state, actions, cost
+    startingNode = (problem.getStartState(), [], 0)
+
+    # if start is goal return nothing
+    if problem.isGoalState(problem.getStartState()):
+        return []
+
+    # create FIFO Queue with node as only element
+    frontier = util.Queue()
+    frontier.push(startingNode)
+
+    # create list for reached Nodes
+    reachedNodes = []
+
+    # loop until frontier is empty
+    while not frontier.isEmpty():
+        # choose the shallowest node in frontier
+        currentState, actions, currentCost = frontier.pop()
+
+        # add current state to reachedNodes if current state hasn't been expanded
+        if currentState not in reachedNodes:
+            reachedNodes.append(currentState)
+
+            # return actions if finds goal
+            if problem.isGoalState(currentState):
+                return actions
+            else:
+                # expand successor and add to frontier
+                for successorState, successorAction, successorCost in problem.getSuccessors(currentState):
+                    child = (successorState, actions + [successorAction], currentCost + successorCost)
+                    frontier.push(child)
+
+    return actions
 
 def uniformCostSearch(problem):
     """Search the node of least total cost first."""
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+
+    # node is initial state, actions, cost
+    startingNode = (problem.getStartState(), [], 0)
+
+    # if start is goal return nothing
+    if problem.isGoalState(problem.getStartState()):
+        return []
+
+    # create FIFO Priority Queue with node as only element ad priority of 0
+    frontier = util.PriorityQueue()
+    frontier.push(startingNode, 0)
+
+    # create dictionary for reached Nodes {'State',Cost}
+    reachedNodes = {}
+
+    # loop until frontier is empty
+    while not frontier.isEmpty():
+        # choose the shallowest node in frontier
+        currentState, actions, currentCost = frontier.pop()
+
+        # add current state with the corresponding cost to reachedNodes dictionary
+        # if current state has not been reached or current cost is less than previous cost
+        if (currentState not in reachedNodes) or currentCost < reachedNodes[currentState]:
+            reachedNodes[currentState] = currentCost
+
+            # return actions if finds goal
+            if problem.isGoalState(currentState):
+                return actions
+            else:
+                # expand successor and add to frontier
+                for successorState, successorAction, successorCost in problem.getSuccessors(currentState):
+                    child = (successorState, actions + [successorAction], currentCost + successorCost)
+                    frontier.push(child, currentCost + successorCost)
+
+    return actions
 
 def nullHeuristic(state, problem=None):
     """
@@ -123,8 +215,47 @@ def nullHeuristic(state, problem=None):
 def aStarSearch(problem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
 
+    # node is initial state, actions, cost
+    startingNode = (problem.getStartState(), [], 0)
+
+    # if start is goal return nothing
+    if problem.isGoalState(problem.getStartState()):
+        return []
+
+    # create FIFO Priority Queue with node as only element ad priority of 0
+    frontier = util.PriorityQueue()
+    frontier.push(startingNode, 0)
+
+    # create list for reached Nodes [state, cost]
+    reachedNodes = {}
+
+    # loop until frontier is empty
+    while not frontier.isEmpty():
+        # choose the shallowest node in frontier
+        currentState, actions, currentCost = frontier.pop()
+
+        # add current state with the corresponding cost to reachedNodes dictionary
+        # if current state has not been reached or current cost is less than previous cost
+        if (currentState not in reachedNodes) or currentCost < reachedNodes[currentState]:
+            reachedNodes[currentState] = currentCost
+
+            # return actions if finds goal
+            if problem.isGoalState(currentState):
+                return actions
+            else:
+                # expand successor and add to frontier
+                for successorState, successorAction, successorCost in problem.getSuccessors(currentState):
+                    child = (successorState, actions + [successorAction], currentCost + successorCost)
+
+                    # check if child node has been reached
+                    childIsReached = (child[0] in reachedNodes) and ((currentCost+successorCost) >= reachedNodes.get(child[0]))
+
+                    if not childIsReached:
+                        heuristicValue = heuristic(successorState, problem)
+                        frontier.update(child, heuristicValue + currentCost + successorCost)
+
+    return actions
 
 # Abbreviations
 bfs = breadthFirstSearch
